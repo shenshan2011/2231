@@ -58,7 +58,8 @@ const AUTH = (() => {
         .select('username').eq('username', u).maybeSingle();
       if (existing) return { ok: false, error: 'Username sudah dipakai.' };
 
-      const email = `${u}@belajarceria.com`;
+      // FIX: Pakai @example.com — reserved domain RFC 2606, diterima semua validator email
+      const email = `${u}@example.com`;
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) return { ok: false, error: error.message };
 
@@ -74,7 +75,8 @@ const AUTH = (() => {
 
     async login(username, password) {
       const u     = username.trim().toLowerCase();
-      const email = `${u}@belajarceria.com`;
+      // FIX: Harus konsisten dengan register — pakai @example.com
+      const email = `${u}@example.com`;
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) {
         if (error.message.includes('Invalid login')) return { ok: false, error: 'Username atau password salah.' };
