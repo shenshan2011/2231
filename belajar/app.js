@@ -1009,3 +1009,30 @@ function confirmExitTKA() {
 }
 
 function retryTKA() { startTKA(tkaSubject); }
+
+// Expose functions ke global window agar onclick di HTML bisa akses
+window.showPage        = showPage;
+window.showSubject     = showSubject;
+window.logout          = logout;
+window.toggleTheme     = toggleTheme;
+window.toggleMute      = toggleMute;
+window.switchAuthTab   = switchAuthTab;
+window.toggleAuthPass  = toggleAuthPass;
+window.submitAuth      = submitAuth;
+window.startQuiz       = startQuiz;
+window.retryQuiz       = retryQuiz;
+window.checkMC         = checkMC;
+window.checkFill       = checkFill;
+window.nextQuestion    = nextQuestion;
+window.flipCard        = flipCard;
+window.fcNav           = fcNav;
+window.startFlashcard  = startFlashcard;
+window.startTKA        = startTKA;
+window.tkaPrev         = tkaPrev;
+window.tkaNext         = tkaNext;
+window.toggleTKAMark   = toggleTKAMark;
+window.selectTKAAnswer = selectTKAAnswer;
+window.confirmSubmitTKA = confirmSubmitTKA;
+window.confirmExitTKA  = confirmExitTKA;
+window.retryTKA        = retryTKA;
+window.renderTKAQuestion = renderTKAQuestion;
