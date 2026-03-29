@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Moderator — BelajarCeria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="moderator.css">
+  <style>
+    /* Additional styles for attempts section */
+    .mod-attempt-num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      background: var(--mod-primary-soft, rgba(99,102,241,0.10));
+      color: var(--mod-primary, #6366F1);
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      font-family: 'Fredoka', cursive;
+    }
+    .mod-timestamp {
+      font-family: 'Nunito', monospace;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--mod-text);
+      white-space: nowrap;
+    }
+    .mod-attempts-table-wrap {
+      overflow-x: auto;
+    }
+    .mod-attempt-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 12px;
+      background: var(--mod-surface);
+      border-radius: 10px;
+    }
+    .mod-meta-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .mod-meta-label {
+      font-size: 0.72rem;
+      color: var(--mod-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .mod-meta-val {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--mod-text);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="mod-nav">
+  <div class="mod-nav-brand">🛡️ <span>Panel Moderator</span></div>
+  <div class="mod-nav-center"><span class="mod-nav-badge">BelajarCeria Admin</span></div>
+  <div class="mod-nav-actions">
+    <span class="mod-nav-user" id="navUsername"></span>
+    <button class="mod-btn mod-btn-danger mod-btn-sm" onclick="modLogout()">🚪 Keluar</button>
+  </div>
+</nav>
+
+<div class="mod-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="mod-sidebar">
+    <div class="mod-sidebar-section">
+      <div class="mod-sidebar-label">Menu</div>
+      <button class="mod-nav-item active" onclick="showSection('overview')" id="nav-overview">📊 Ringkasan</button>
+      <button class="mod-nav-item"        onclick="showSection('users')"    id="nav-users">👥 Daftar Pengguna</button>
+      <button class="mod-nav-item"        onclick="showSection('attempts')" id="nav-attempts">📋 Audit Attempts</button>
+      <button class="mod-nav-item"        onclick="showSection('quiz')"     id="nav-quiz">🎯 Progres Quiz</button>
+      <button class="mod-nav-item"        onclick="showSection('tka')"      id="nav-tka">🏆 Hasil TKA</button>
+    </div>
+    <div class="mod-sidebar-section" style="margin-top:auto">
+      <div class="mod-sidebar-label">Sistem</div>
+      <div class="mod-sys-info" id="sysInfo"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="mod-main">
+
+    <!-- ── OVERVIEW ── -->
+    <section class="mod-section active" id="section-overview">
+      <div class="mod-page-header">
+        <h1 class="mod-page-title">📊 Ringkasan</h1>
+        <p class="mod-page-sub">Statistik keseluruhan platform BelajarCeria</p>
+      </div>
+      <div class="mod-stat-grid" id="overviewStats"></div>
+      <div class="mod-card" style="margin-top:24px">
+        <div class="mod-card-header"><h2 class="mod-card-title">🕐 Aktivitas Terbaru</h2></div>
+        <div id="recentActivity"></div>
+      </div>
+    </section>
+
+    <!-- ── DAFTAR PENGGUNA ── -->
+    <section class="mod-section" id="section-users">
+      <div class="mod-page-header">
+        <h1 class="mod-page-title">👥 Daftar Pengguna</h1>
+        <p class="mod-page-sub">Semua akun terdaftar di BelajarCeria</p>
+      </div>
+      <div class="mod-toolbar">
+        <div class="mod-search-wrap">
+          <span class="mod-search-icon">🔍</span>
+          <input class="mod-search" id="userSearch" type="text" placeholder="Cari username…" oninput="renderUserTable()">
+        </div>
+        <div class="mod-filter-group">
+          <label class="mod-filter-label">Urutkan:</label>
+          <select class="mod-select" id="userSort" onchange="renderUserTable()">
+            <option value="join-desc">Terbaru bergabung</option>
+            <option value="join-asc">Terlama bergabung</option>
+            <option value="study-desc">Waktu belajar terbanyak</option>
+            <option value="xp-desc">XP tertinggi</option>
+          </select>
+        </div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-table-wrap">
+          <table class="mod-table" id="userTable">
+            <thead>
+              <tr><th>#</th><th>Username</th><th>Bergabung</th><th>Terakhir Login</th><th>Waktu Belajar</th><th>XP</th><th>Streak</th><th>Attempts</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AUDIT ATTEMPTS (BARU) ── -->
+    <section class="mod-section" id="section-attempts">
+      <div class="mod-page-header">
+        <h1 class="mod-page-title">📋 Audit Attempts Quiz</h1>
+        <p class="mod-page-sub">Setiap percobaan quiz dengan ID, timestamp, dan detail jawaban untuk audit kecurangan</p>
+      </div>
+
+      <!-- Schema info box -->
+      <div class="mod-card" style="margin-bottom:16px;background:var(--mod-primary-soft,rgba(99,102,241,0.05));border:1.5px solid rgba(99,102,241,0.15)">
+        <div class="mod-card-header" style="padding:12px 16px">
+          <h3 style="font-size:0.9rem;font-weight:800;color:var(--mod-primary)">🔑 Skema Logging</h3>
+        </div>
+        <div style="padding:0 16px 12px;font-size:0.8rem;display:flex;gap:16px;flex-wrap:wrap">
+          <span><strong>Quiz ID</strong> — ID unik per topik (QZ-XXXXXX), permanen</span>
+          <span><strong>Attempt ID</strong> — ID unik per sesi pengerjaan (ATM-QZ-…)</span>
+          <span><strong>Percobaan ke-</strong> — Urutan attempt user untuk topik tsb</span>
+          <span><strong>Timestamp</strong> — Format DD-MM-YYYY, HH:MM:SS</span>
+        </div>
+      </div>
+
+      <div class="mod-toolbar">
+        <div class="mod-search-wrap">
+          <span class="mod-search-icon">🔍</span>
+          <input class="mod-search" id="attemptSearch" type="text" placeholder="Cari username…" oninput="renderAttemptsSection()">
+        </div>
+        <div class="mod-filter-group">
+          <label class="mod-filter-label">Filter Quiz ID:</label>
+          <input class="mod-search" id="attemptQuizFilter" type="text" placeholder="QZ-…" style="width:130px" oninput="renderAttemptsSection()">
+        </div>
+        <div class="mod-filter-group">
+          <label class="mod-filter-label">Urutkan:</label>
+          <select class="mod-select" id="attemptSort" onchange="renderAttemptsSection()">
+            <option value="date-desc">Terbaru</option>
+            <option value="date-asc">Terlama</option>
+            <option value="score-desc">Nilai tertinggi</option>
+            <option value="score-asc">Nilai terendah</option>
+            <option value="attempt-desc">Percobaan terbanyak</option>
+          </select>
+        </div>
+      </div>
+      <div id="attemptsContent"></div>
+    </section>
+
+    <!-- ── PROGRES QUIZ ── -->
+    <section class="mod-section" id="section-quiz">
+      <div class="mod-page-header">
+        <h1 class="mod-page-title">🎯 Progres Quiz</h1>
+        <p class="mod-page-sub">Detail jawaban dan nilai quiz semua pengguna</p>
+      </div>
+      <div class="mod-toolbar">
+        <div class="mod-search-wrap">
+          <span class="mod-search-icon">🔍</span>
+          <input class="mod-search" id="quizSearch" type="text" placeholder="Cari username…" oninput="renderQuizSection()">
+        </div>
+        <div class="mod-filter-group">
+          <label class="mod-filter-label">Urutkan:</label>
+          <select class="mod-select" id="quizSort" onchange="renderQuizSection()">
+            <option value="score-desc">Nilai tertinggi</option>
+            <option value="score-asc">Nilai terendah</option>
+            <option value="count-desc">Quiz terbanyak</option>
+          </select>
+        </div>
+      </div>
+      <div id="quizContent"></div>
+    </section>
+
+    <!-- ── HASIL TKA ── -->
+    <section class="mod-section" id="section-tka">
+      <div class="mod-page-header">
+        <h1 class="mod-page-title">🏆 Hasil TKA</h1>
+        <p class="mod-page-sub">Riwayat dan detail jawaban TKA semua pengguna</p>
+      </div>
+      <div class="mod-toolbar">
+        <div class="mod-search-wrap">
+          <span class="mod-search-icon">🔍</span>
+          <input class="mod-search" id="tkaSearch" type="text" placeholder="Cari username…" oninput="renderTKASection()">
+        </div>
+        <div class="mod-filter-group">
+          <label class="mod-filter-label">Urutkan:</label>
+          <select class="mod-select" id="tkaSort" onchange="renderTKASection()">
+            <option value="score-desc">Nilai tertinggi</option>
+            <option value="score-asc">Nilai terendah</option>
+            <option value="date-desc">Terbaru</option>
+          </select>
+        </div>
+      </div>
+      <div id="tkaContent"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL — DETAIL USER -->
+<div class="mod-modal-overlay" id="detailModal" onclick="closeDetailModal(event)">
+  <div class="mod-modal-box" id="detailModalBox">
+    <button class="mod-modal-close" onclick="closeDetailModal()">✕</button>
+    <div id="detailModalContent"></div>
+  </div>
+</div>
+
+<!-- MODAL — DETAIL JAWABAN -->
+<div class="mod-modal-overlay" id="answerModal" onclick="closeAnswerModal(event)">
+  <div class="mod-modal-box mod-modal-wide" id="answerModalBox">
+    <button class="mod-modal-close" onclick="closeAnswerModal()">✕</button>
+    <div id="answerModalContent"></div>
+  </div>
+</div>
+
+<script type="module" src="js/moderator.js"></script>
+</body>
+</html>
